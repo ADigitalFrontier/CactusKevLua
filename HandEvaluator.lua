@@ -99,30 +99,37 @@ local EvaluateFiveCardHand = function(hand)
 	end
 end
 
+-- Function to generate combinations
+local function combinations(t, n)
+    if n == 0 then return {{}} end
+    if #t == 0 then return {} end
+    local h = t[1]
+    local ts = {}
+    for i = 2, #t do table.insert(ts, t[i]) end
+    local res1 = combinations(ts, n - 1)
+    local res2 = combinations(ts, n)
+    for i = 1, #res1 do table.insert(res1[i], h) end
+    for i = 1, #res2 do table.insert(res1, res2[i]) end
+    return res1
+end
+
 local EvaluateSevenCardHand = function(hand)
-	-- 7 choose 5 is 21 possible combinations; we will loop through all of them and choose the best one
-	local bestRank = 8192
-	local bestHandName = ""
+    local bestRank = 8192
+    local bestHandName = ""
 
-	-- Iterate through all 21 combinations
-	for i = 1, 7 do
-		for j = i + 1, 7 do
-			for k = j + 1, 7 do
-				for l = k + 1, 7 do
-					for m = l + 1, 7 do
-						local currentHand = {hand[i], hand[j], hand[k], hand[l], hand[m]}
-						local currentRank, currentHandName = EvaluateFiveCardHand(currentHand)
-						if currentRank < bestRank then
-							bestRank = currentRank
-							bestHandName = currentHandName
-						end
-					end
-				end
-			end
-		end
-	end
+    -- Generate all 5-card combinations from the 7-card hand
+    local allCombinations = combinations(hand, 5)
 
-	return bestRank, bestHandName
+    -- Evaluate each 5-card combination
+    for _, currentHand in ipairs(allCombinations) do
+        local currentRank, currentHandName = EvaluateFiveCardHand(currentHand)
+        if currentRank < bestRank then
+            bestRank = currentRank
+            bestHandName = currentHandName
+        end
+    end
+
+    return bestRank, bestHandName
 end
 
 local Evaluate = function(hand)
